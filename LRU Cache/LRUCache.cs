@@ -24,20 +24,26 @@ namespace LRU_Cache
             _tail.Prev = _head;
         }
 
+
         private void AddToHead(Node<K, V> node)
         {
-            node.Prev = _head;
-            node.Next = _head.Next;
-            _head.Next.Prev = node;
-            _head.Next = node;
+            //example HEAD <-> A <-> B <-> TAIL
+            //Now, we want to insert a new node X right after HEAD, like this:
+            //HEAD <-> X <-> A <-> B <-> TAIL
+            node.Prev = _head; //Head<-X
+            node.Next = _head.Next;// X->A
+            _head.Next.Prev = node;// A<-X
+            _head.Next = node;// Head->X
         }
 
         private void RemoveNode(Node<K, V> node)
         {
-            var prevNode = node.Prev;
-            var nextNode = node.Next;
-            prevNode.Next = nextNode;
-            nextNode.Prev = prevNode;
+            //example HEAD <-> A <-> B <-> TAIL
+            // Now, we want to remove node B, like this:
+            var prevNode = node.Prev;// A
+            var nextNode = node.Next;// TAIL
+            prevNode.Next = nextNode;// A->TAIL
+            nextNode.Prev = prevNode;// TAIL->A
         }
 
         private void MoveToHead(Node<K, V> node)
@@ -50,9 +56,9 @@ namespace LRU_Cache
         {
             try
             {
-                var tailNode = _tail.Prev;
-                RemoveNode(tailNode);
-                return tailNode;
+                var tailNode = _tail.Prev;// Get the last node before the tail
+                RemoveNode(tailNode);// Remove it from the linked list
+                return tailNode;// Return the removed node
             }
             catch (Exception ex)
             {
