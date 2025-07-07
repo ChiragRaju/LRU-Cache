@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LRU_Cache
 {
-    public class LRUCache<K,V>
+    public class LRUCache<K, V>
     {
         private readonly int _capacity;
         private readonly Dictionary<K, Node<K, V>> _cache;
@@ -22,8 +22,8 @@ namespace LRU_Cache
             _tail = new Node<K, V>(default!, default!);
             _head.Next = _tail;
             _tail.Prev = _head;
-
         }
+
         private void AddToHead(Node<K, V> node)
         {
             node.Prev = _head;
@@ -31,9 +31,10 @@ namespace LRU_Cache
             _head.Next.Prev = node;
             _head.Next = node;
         }
+
         private void RemoveNode(Node<K, V> node)
         {
-           var prevNode = node.Prev;
+            var prevNode = node.Prev;
             var nextNode = node.Next;
             prevNode.Next = nextNode;
             nextNode.Prev = prevNode;
@@ -45,44 +46,66 @@ namespace LRU_Cache
             AddToHead(node);
         }
 
-        private Node<K,V> RemoveTail()
+        private Node<K, V> RemoveTail()
         {
-            var tailNode = _tail.Prev;
-            RemoveNode(tailNode);
-            return tailNode;
+            try
+            {
+                var tailNode = _tail.Prev;
+                RemoveNode(tailNode);
+                return tailNode;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in RemoveTail: {ex.Message}");
+                throw;
+            }
         }
 
         public V GetV(K key)
         {
-            if (!_cache.TryGetValue(key, out var node))
+            try
             {
-                return default; //return null if key not found
+                if (!_cache.TryGetValue(key, out var node))
+                {
+                    return default; // return null if key not found
+                }
+                MoveToHead(node); // Move the accessed node to the head
+                return node.Value;
             }
-            MoveToHead(node); // Move the accessed node to the head
-            return node.Value;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetV: {ex.Message}");
+                return default;
+            }
         }
 
         public void Put(K key, V value)
         {
-            if (_cache.TryGetValue(key, out var node))
+            try
             {
-                node.Value = value; // Update the value
-                MoveToHead(node);
-            }
-            else
-            {
-                var newNode = new Node<K, V>(key, value);
-                _cache[key] = newNode;
-                AddToHead(newNode);
-
-                if (_cache.Count > _capacity)
+                if (_cache.TryGetValue(key, out var node))
                 {
-                    var removedNode = RemoveTail();
-                    _cache.Remove(removedNode.Key);
+                    node.Value = value; // Update the value
+                    MoveToHead(node);
+                }
+                else
+                {
+                    var newNode = new Node<K, V>(key, value);
+                    _cache[key] = newNode;
+                    AddToHead(newNode);
+
+                    if (_cache.Count > _capacity)
+                    {
+                        var removedNode = RemoveTail();
+                        _cache.Remove(removedNode.Key);
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in Put: {ex.Message}");
+                // Optionally rethrow or handle as needed
+            }
         }
-
-
     }
 }
